@@ -1,0 +1,8 @@
+# Versions the legacy prototype was tested with (Python 3.14.4, macOS, 2026-11-24).
+# eclipse-sumo bundles the sumo/sumo-gui/netconvert binaries and SUMO tools.
+eclipse-sumo==1.28.0
+traci==1.28.0
+sumolib==1.28.0
+torch==2.14.1
+numpy==2.5.4
+matplotlib==3.11.2

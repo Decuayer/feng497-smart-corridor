@@ -1,0 +1,8 @@
+# OPTIONAL dependencies for edge/prototypes/izum_live_detection.py only.
+# WARNING: ultralytics is licensed under AGPL-3.0. It is an optional
+# dependency of edge/ and must never be bundled or vendored into this repo.
+# Versions tested on 2026-11-24 (Python 3.14.4, macOS):
+ultralytics==8.4.183
+opencv-python==5.0.0.93
+numpy==2.5.4
+requests==2.34.2
