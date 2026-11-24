@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:izmir-smart-corridor:contracts:system_log_event:0.1.0",
+  "$id": "urn:feng497-smart-corridor:contracts:system_log_event:0.1.0",
   "title": "SystemLogEvent",
   "description": "DRAFT v0.1.0 - to be confirmed by Ario Bashiri (backend log store). Structured event emitted by any module and stored centrally. Consumed by ai/decision_support (Demir Cücü) to generate grounded operator briefings and anomaly/incident summaries. Synthetic events generated from SUMO runs MUST set synthetic=true.",
   "type": "object",

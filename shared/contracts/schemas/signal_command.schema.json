@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:izmir-smart-corridor:contracts:signal_command:0.1.0",
+  "$id": "urn:feng497-smart-corridor:contracts:signal_command:0.1.0",
   "title": "SignalCommand",
   "description": "DRAFT v0.1.0. Requested next green phase for one intersection. Path: ai/ (Demir Cücü) -> backend/ (Ario Bashiri) -> ESP32 relay board (hardware/, Tolga Uçar). This is a REQUEST: the hardware green-conflict interlock and the 1000 ms watchdog (flashing-yellow fallback) remain authoritative and may reject or override it. Safety limits are encoded as bounds: green 10-60 s, yellow 3 s, all-red 1 s.",
   "type": "object",

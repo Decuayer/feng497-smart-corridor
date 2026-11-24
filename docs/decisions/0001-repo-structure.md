@@ -1,6 +1,6 @@
 # ADR 0001: Monorepo with one top-level folder per team module
 
-- **Status:** Accepted (licence: pending team confirmation)
+- **Status:** Accepted
 - **Date:** 2026-11-24
 - **Deciders:** Demir Cücü; to be reviewed by the full team
 
@@ -17,7 +17,7 @@ Six team members across Computer, Electrical-Electronics and Industrial Engineer
 4. **Ownership is enforced** with `.github/CODEOWNERS` and branch protection: PRs into `develop` need a review from the owner of every touched folder.
 5. **Data, weights and simulation outputs are never committed.** `data/README.md` documents how to obtain the data. Large-file and secret rules are in CONTRIBUTING.md.
 6. **Root documentation**: README (overview), CONTRIBUTING (process), `docs/` (architecture, ADRs, interface summary, meeting template), and CLAUDE.md (rules for AI coding assistants).
-7. **Licence: MIT, pending team confirmation.** Ultralytics YOLOv8 (AGPL-3.0) may only be an optional dependency of `edge/`. It is never bundled or vendored, so the MIT licence of the rest of the code is unaffected. The team must confirm this before the first public release.
+7. **Licence: MIT** (copyright: FENG 497 Group 08 – Izmir University of Economics). Ultralytics YOLOv8 (AGPL-3.0) may only be an optional dependency of `edge/`. It is never bundled or vendored, so the MIT licence of the rest of the code is unaffected.
 
 ## Alternatives considered
 
@@ -30,10 +30,9 @@ Six team members across Computer, Electrical-Electronics and Industrial Engineer
 - Positive: one place for contracts, docs and CI; atomic cross-module PRs; clear ownership.
 - Negative: CI must handle per-module setups. Repository size must be watched (2 MB rule, gzipped SUMO nets).
 - The existing MARL prototype is kept runnable under `ai/prototype/` until it is replaced by the `ai/` package (see `ai/README.md`, Known issues).
-- Git history starts at the import of the prototype on 2026-11-24. There was no earlier version control.
+- Git history starts at the import of the prototype on 2026-11-24. There was no earlier version control. The repository is `Decuayer/feng497-smart-corridor` on GitHub; the project's display title remains "Izmir Smart Corridor".
 
 ## Open items
 
-- Team confirmation of the MIT licence.
-- GitHub usernames for CODEOWNERS (currently `@TODO-<name>` placeholders).
+- GitHub usernames for CODEOWNERS (currently every path is owned by `@Decuayer`, with the intended owner noted in a comment).
 - Branch protection settings on GitHub (`main` and `develop`).

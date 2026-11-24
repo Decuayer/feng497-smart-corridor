@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:izmir-smart-corridor:contracts:emergency_request:0.1.0",
+  "$id": "urn:feng497-smart-corridor:contracts:emergency_request:0.1.0",
   "title": "EmergencyRequest",
   "description": "DRAFT v0.1.0. Priority request from an emergency vehicle. Path: V2I transponder (hardware/, Tolga Uçar) -> backend/ (Ario Bashiri, verifies HMAC/AES and sets auth.verified) -> ai/ emergency corridor (Demir Cücü). In simulation, ai/ generates the same message from SUMO vehicles of vType emergency/firebrigade with source='simulation'. ai/ MUST ignore requests with auth.verified=false.",
   "type": "object",

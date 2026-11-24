@@ -1,18 +1,22 @@
 # Code owners - PRs touching these paths request a review from the owner.
-# GitHub usernames are PLACEHOLDERS (@TODO-<name>); replace them with the
-# real usernames before enabling branch protection.
+#
+# GitHub only accepts @usernames, @org/team handles or e-mail addresses here.
+# Until every teammate's GitHub username is known, all paths are owned by
+# @Decuayer (Demir Cücü). The intended owner of each path is noted in a
+# comment; replace @Decuayer with the teammate's username once available.
+# Later rules override earlier ones for the same path.
 
-# Default: repository-wide files are reviewed by any team member
-*                        @TODO-demir-cucu @TODO-oyku-doga-dabak @TODO-ario-bashiri @TODO-nihat-efe-kargi @TODO-tolga-ucar @TODO-ayca-avci
+# Default: whole team (intended); everything not matched below
+*                       @Decuayer   # intended owner: whole team
 
-/simulation/             @TODO-oyku-doga-dabak
-/ai/                     @TODO-demir-cucu
-/backend/                @TODO-ario-bashiri
-/dashboard/              @TODO-ario-bashiri
-/edge/                   @TODO-nihat-efe-kargi
-/hardware/               @TODO-tolga-ucar
-/analysis/               @TODO-ayca-avci
+/simulation/            @Decuayer   # intended owner: Öykü Doğa Dabak (username TBD)
+/ai/                    @Decuayer   # owner: Demir Cücü
+/backend/               @Decuayer   # intended owner: Ario Bashiri (username TBD)
+/dashboard/             @Decuayer   # intended owner: Ario Bashiri (username TBD)
+/edge/                  @Decuayer   # intended owner: Nihat Efe Kargı (username TBD)
+/hardware/              @Decuayer   # intended owner: Tolga Uçar (username TBD)
+/analysis/              @Decuayer   # intended owner: Ayça Avcı (username TBD)
 
-# Cross-team contracts: every producer/consumer owner
-/shared/contracts/       @TODO-oyku-doga-dabak @TODO-demir-cucu @TODO-ario-bashiri @TODO-nihat-efe-kargi @TODO-tolga-ucar
-/shared/contracts/intersections.yaml  @TODO-oyku-doga-dabak @TODO-demir-cucu @TODO-ario-bashiri
+# Cross-team: every affected owner must approve
+/shared/contracts/      @Decuayer   # intended owner: whole team
+/docs/                  @Decuayer   # intended owner: whole team

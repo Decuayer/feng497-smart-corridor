@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:izmir-smart-corridor:contracts:queue_telemetry:0.1.0",
+  "$id": "urn:feng497-smart-corridor:contracts:queue_telemetry:0.1.0",
   "title": "QueueTelemetry",
   "description": "DRAFT v0.1.0. Lane-level queue telemetry published by an edge vision node for one intersection. Producer: edge/ (Nihat Efe Kargı). Consumer: backend/ (Ario Bashiri), forwarded to ai/ and dashboard/.",
   "type": "object",

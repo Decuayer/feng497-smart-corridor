@@ -2,9 +2,8 @@
 
 **AI-Driven Adaptive Traffic Flow Optimization and Emergency Green-Corridor Management System Using Digital Twin Simulation and Edge V2I**
 
-<!-- Status badges: placeholders until CI is enabled on GitHub -->
-![CI](https://img.shields.io/badge/CI-pending-lightgrey)
-![License](https://img.shields.io/badge/license-MIT%20(pending%20team%20confirmation)-lightgrey)
+[![CI](https://github.com/Decuayer/feng497-smart-corridor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Decuayer/feng497-smart-corridor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
 
 Izmir Smart Corridor is a multidisciplinary capstone project (FENG 497, Izmir University of Economics). It builds an adaptive traffic-signal control system for the Alsancak–Konak arterial network in Izmir. Edge cameras estimate lane queues. Emergency vehicles request priority over authenticated V2I radio links. A SUMO digital twin of the corridor is used to train and validate multi-agent reinforcement-learning signal controllers and a proactive emergency green-corridor algorithm. Operators supervise the system through a web dashboard. All validation happens in simulation and in hardware-in-the-loop testbenches; the system never interferes with live municipal controllers.
@@ -106,6 +105,13 @@ Message formats are defined in [`shared/contracts/`](shared/contracts/) and summ
 | SUMO | ≥ 1.18; tested with **1.28.0** | Supported install: the pip package **`eclipse-sumo`** (bundles `sumo`, `sumo-gui`, `netconvert`, `netgenerate`, and `tools/`), plus `traci` and `sumolib` |
 | Node.js | current LTS | Dashboard only |
 
+### Clone
+
+```bash
+git clone https://github.com/Decuayer/feng497-smart-corridor.git
+cd feng497-smart-corridor
+```
+
 ### Python environment and SUMO
 
 ```bash
@@ -154,7 +160,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, commits, reviews and code 
 
 ## Licence
 
-MIT (see [LICENSE](LICENSE)). **Pending team confirmation**; see [ADR 0001](docs/decisions/0001-repo-structure.md).
+MIT. Copyright © 2026 FENG 497 Group 08 – Izmir University of Economics. See [LICENSE](LICENSE) and [ADR 0001](docs/decisions/0001-repo-structure.md).
 
 ## Third-party licences and attribution
 
