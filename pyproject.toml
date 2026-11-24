@@ -1,0 +1,21 @@
+# Repository-wide tool configuration only. This is NOT an installable package:
+# each module manages its own dependencies (see docs/decisions/0001-repo-structure.md).
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+# Legacy prototypes are kept as-is (see ai/README.md "Known issues").
+extend-exclude = ["ai/prototype", "edge/prototypes"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+extend-exclude = "^/(ai/prototype|edge/prototypes)/"
+
+[tool.pytest.ini_options]
+markers = [
+  "sumo: needs a SUMO installation (skipped in CI unit-test jobs)",
+]

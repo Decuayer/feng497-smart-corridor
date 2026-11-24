@@ -59,7 +59,9 @@ def main() -> int:
 
         for enum_path, enum in _intersection_enums(schema):
             if list(enum) != ids:
-                errors.append(f"{schema_path.name}{enum_path}: enum {enum} != intersections.yaml ids {ids}")
+                errors.append(
+                    f"{schema_path.name}{enum_path}: enum {enum} != intersections.yaml ids {ids}"
+                )
 
         example_path = EXAMPLES / f"{name}.example.json"
         if not example_path.exists():

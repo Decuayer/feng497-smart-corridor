@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repo-hygiene:
+    name: Repo hygiene (file sizes, contracts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Large-file check (max 2 MB, *.net.xml.gz exempt)
+        run: bash scripts/check_large_files.sh
+      - name: Validate shared/contracts
+        run: |
+          pip install jsonschema pyyaml
+          python scripts/validate_contracts.py
+
+  python-lint:
+    name: Python lint (ruff + black)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff black
+      - run: ruff check .
+      - run: black --check .
+
+  python-tests:
+    name: Unit tests (${{ matrix.module }}, py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ai, simulation, backend, edge, hardware, analysis]
+        # ASSUMPTION: 3.10 is the minimum; 3.14 is the tested dev version.
+        python: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for tests
+        id: detect
+        run: |
+          if [ -d "${{ matrix.module }}/tests" ]; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+            echo "No ${{ matrix.module }}/tests yet - skipping."
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.detect.outputs.has_tests == 'true'
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install module dependencies
+        if: steps.detect.outputs.has_tests == 'true'
+        working-directory: ${{ matrix.module }}
+        run: |
+          python -m pip install --upgrade pip pytest
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt;
+          elif [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e .; fi
+      - name: Run unit tests (no SUMO)
+        if: steps.detect.outputs.has_tests == 'true'
+        working-directory: ${{ matrix.module }}
+        run: python -m pytest tests -m "not sumo" -q
+
+  dashboard:
+    name: Dashboard lint + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for package.json
+        id: detect
+        run: |
+          if [ -f dashboard/package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT";
+          else echo "present=false" >> "$GITHUB_OUTPUT"; echo "dashboard/package.json not found - skipping."; fi
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.present == 'true'
+        with:
+          node-version: lts/*
+      - name: Install, lint, test
+        if: steps.detect.outputs.present == 'true'
+        working-directory: dashboard
+        run: |
+          npm ci
+          npm run lint
+          npm test --if-present
