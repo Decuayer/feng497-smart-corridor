@@ -1,0 +1,9 @@
+# Baseline controllers. Merged on top of base.yaml by corridor_ai.marl.evaluate.
+name: baselines
+webster:
+  saturation_flow_vphpl: 1800   # ASSUMPTION until analysis/ (Ayça) provides values
+  lost_time_per_phase_s: 4      # yellow 3 s + all-red 1 s (ASSUMPTION: start-up loss = end gain)
+  cycle_max_s: 150              # ASSUMPTION
+  y_max: 0.95                   # cap on the critical flow ratio sum Y
+  calibration_seed_offset: 100000   # flows measured on seed + offset (not the eval seed)
+  calibration_duration_s: 3600

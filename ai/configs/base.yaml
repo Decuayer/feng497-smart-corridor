@@ -1,0 +1,38 @@
+# Base configuration, merged first into every experiment.
+name: base
+fixture: toy_corridor
+seed: 0
+
+# Signal safety limits (project specification). The loader rejects any
+# attempt to relax them: min green >= 10, max green <= 60, yellow == 3, all-red == 1.
+limits:
+  min_green_s: 10
+  max_green_s: 60
+  yellow_s: 3
+  all_red_s: 1
+  all_red_mode: full
+
+sim:
+  backend: libsumo
+  gui: false
+  warmup_s: 300
+  horizon_s: 3600
+  demand_scale: 1.0
+  time_to_teleport_s: 300
+  waiting_time_memory_s: 1000
+  write_tripinfo: true
+
+env:
+  decision_interval_s: 5
+  k_max: 0            # 0 = derived from the fixture's agents
+  phase_order: free   # free | cyclic
+  max_red_s: 120      # starvation guard (ASSUMPTION); null disables
+  vehicle_length_m: 7.5
+  wait_norm_s: 120.0
+  reward:
+    alpha: 1.0
+    beta: 0.5
+    stop_definition: halted   # halted | stop_events
+    w_ref_s: 100.0
+    s_ref: 5.0
+    normalize_by_lanes: true
