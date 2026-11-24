@@ -1,0 +1,18 @@
+# Code owners - PRs touching these paths request a review from the owner.
+# GitHub usernames are PLACEHOLDERS (@TODO-<name>); replace them with the
+# real usernames before enabling branch protection.
+
+# Default: repository-wide files are reviewed by any team member
+*                        @TODO-demir-cucu @TODO-oyku-doga-dabak @TODO-ario-bashiri @TODO-nihat-efe-kargi @TODO-tolga-ucar @TODO-ayca-avci
+
+/simulation/             @TODO-oyku-doga-dabak
+/ai/                     @TODO-demir-cucu
+/backend/                @TODO-ario-bashiri
+/dashboard/              @TODO-ario-bashiri
+/edge/                   @TODO-nihat-efe-kargi
+/hardware/               @TODO-tolga-ucar
+/analysis/               @TODO-ayca-avci
+
+# Cross-team contracts: every producer/consumer owner
+/shared/contracts/       @TODO-oyku-doga-dabak @TODO-demir-cucu @TODO-ario-bashiri @TODO-nihat-efe-kargi @TODO-tolga-ucar
+/shared/contracts/intersections.yaml  @TODO-oyku-doga-dabak @TODO-demir-cucu @TODO-ario-bashiri
