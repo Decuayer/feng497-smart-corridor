@@ -2,6 +2,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from prototype_paths import RUNS_DIR
+
 # Metrik verileri
 metrics = ["Ort. Bekleme Süresi (sn)", "Ortalama Kuyruk (Araç)"]
 baseline_values = [486.50, 12.08]
@@ -61,6 +63,8 @@ axes[1].annotate(
 )
 
 plt.tight_layout()
-plt.savefig("benchmark_comparison.png", dpi=300)
-print("Grafik 'benchmark_comparison.png' olarak kaydedildi.")
+RUNS_DIR.mkdir(parents=True, exist_ok=True)
+out_path = RUNS_DIR / "benchmark_comparison.png"
+plt.savefig(out_path, dpi=300)
+print(f"Grafik '{out_path}' olarak kaydedildi.")
 plt.show()

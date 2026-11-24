@@ -6,10 +6,7 @@ import traci
 from envs.sumo_marl_env import SumoTTLEnv
 from models.mappo_networks import MAPPOModule
 
-CONFIG_PATH = "configs/intersections_config.json"
-NET_FILE = "networks/osm.net.xml"
-ROUTE_FILE = "networks/osm.passenger.trips.xml"
-MODEL_PATH = "weights/mappo_corridor.pt"
+from prototype_paths import CONFIG_PATH, MODEL_PATH, NET_FILE, ROUTE_FILE
 SCALE = 2.0
 
 DELTA_TIME = 5

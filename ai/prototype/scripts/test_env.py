@@ -1,12 +1,16 @@
+import sys
+from pathlib import Path
+
+# Make ai/prototype importable when run as scripts/<name>.py
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import os
 import random
 import traci
 from envs.sumo_marl_env import SumoTTLEnv
 
 # Dosya yolları
-CONFIG_PATH = "configs/intersections_config.json"
-NET_FILE = "networks/osm.net.xml"
-ROUTE_FILE = "networks/osm.passenger.trips.xml"  # veya senaryonuzdaki .rou.xml dosyası
+from prototype_paths import CONFIG_PATH, NET_FILE, ROUTE_FILE
 
 def run_test():
     # Ortamı GUI olmadan başlat (GUI görmek için use_gui=True yapabilirsiniz)

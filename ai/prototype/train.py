@@ -20,9 +20,7 @@ ROLLOUT_STEPS = 120       # Her güncelleme öncesi toplanacak adım sayısı
 TOTAL_EPISODES = 50
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-CONFIG_PATH = "configs/intersections_config.json"
-NET_FILE = "networks/osm.net.xml"
-ROUTE_FILE = "networks/osm.passenger.trips.xml"
+from prototype_paths import CONFIG_PATH, MODEL_PATH, NET_FILE, ROUTE_FILE
 
 obs_dims = {"lozan": 18, "montro": 19, "dokuz_eylul": 20}
 agents = list(obs_dims.keys())
@@ -133,9 +131,9 @@ def train():
         print(f"Epizot [{episode}/{TOTAL_EPISODES}] | Toplam Ödül: {episode_reward:.4f} | Kayıp: {total_loss.item():.4f}")
 
     # Modeli kaydet
-    os.makedirs("weights", exist_ok=True)
-    torch.save(model.state_dict(), "weights/mappo_corridor.pt")
-    print("Eğitim tamamlandı. Model 'weights/mappo_corridor.pt' dosyasına kaydedildi.")
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    torch.save(model.state_dict(), MODEL_PATH)
+    print(f"Eğitim tamamlandı. Model '{MODEL_PATH}' dosyasına kaydedildi.")
 
 
 if __name__ == "__main__":

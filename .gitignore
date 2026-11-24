@@ -124,9 +124,3 @@ desktop.ini
 /prompts/
 # Archived, superseded or local-only artefacts
 /_local/
-# Legacy prototype locations (pre-restructure); safe to keep ignored
-/2026-10-21-10-50-58/
-/networks/osm.net.xml
-/2026-10-21-14-55-12/osm.net.xml
-/2026-10-21-14-55-12/osm.net.xml.gz
-/2026-10-21-14-55-12/osm.passenger.trips.xml

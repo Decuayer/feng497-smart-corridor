@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+# Make ai/prototype importable when run as scripts/<name>.py
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import torch
 from models.mappo_networks import MAPPOModule
 
