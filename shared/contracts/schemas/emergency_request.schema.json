@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:izmir-smart-corridor:contracts:emergency_request:0.1.0",
+  "title": "EmergencyRequest",
+  "description": "DRAFT v0.1.0. Priority request from an emergency vehicle. Path: V2I transponder (hardware/, Tolga Uçar) -> backend/ (Ario Bashiri, verifies HMAC/AES and sets auth.verified) -> ai/ emergency corridor (Demir Cücü). In simulation, ai/ generates the same message from SUMO vehicles of vType emergency/firebrigade with source='simulation'. ai/ MUST ignore requests with auth.verified=false.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "timestamp", "vehicle_id", "vehicle_type", "request_type", "source", "auth"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "request_id": { "type": "string", "format": "uuid", "description": "Stable for the whole trip; updates and cancel reuse it." },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "vehicle_id": { "type": "string", "minLength": 1 },
+    "vehicle_type": { "enum": ["ambulance", "fire_truck"] },
+    "request_type": {
+      "enum": ["request", "update", "cancel"],
+      "description": "request = new priority request; update = new position/route/ETA; cancel = vehicle passed or mission ended."
+    },
+    "priority": { "type": "integer", "minimum": 1, "maximum": 3, "default": 1, "description": "1 = highest. Arbitration between simultaneous requests." },
+    "source": { "enum": ["v2i_lora", "v2i_rf", "v2i_ble", "edge_detection", "simulation", "manual"] },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lat", "lon"],
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lon": { "type": "number", "minimum": -180, "maximum": 180 },
+        "accuracy_m": { "type": "number", "minimum": 0 }
+      }
+    },
+    "speed_mps": { "type": "number", "minimum": 0 },
+    "heading_deg": { "type": "number", "minimum": 0, "exclusiveMaximum": 360 },
+    "approaching_intersection_id": {
+      "enum": ["alsancak_station", "lozan", "montro", "basmane", "cankaya", "konak_pier"]
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intersection_ids": {
+          "type": "array",
+          "description": "Ordered upcoming signalised intersections, starting with the one being approached.",
+          "items": { "enum": ["alsancak_station", "lozan", "montro", "basmane", "cankaya", "konak_pier"] }
+        },
+        "sumo_edges": { "type": "array", "items": { "type": "string" }, "description": "Simulation only: remaining SUMO route edges." }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "method"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "method": { "enum": ["hmac_sha256", "aes_gcm", "simulation", "none"] },
+        "verified_by": { "type": "string" }
+      }
+    },
+    "sim": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sumo_vehicle_id": { "type": "string" },
+        "sim_time_s": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

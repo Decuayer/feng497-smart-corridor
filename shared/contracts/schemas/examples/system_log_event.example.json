@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "event_id": "3c5e7a9b-1d3f-4b5a-8c7e-9f1a3b5c7d9e",
+  "timestamp": "2026-11-24T08:16:04.010Z",
+  "source": "ai",
+  "severity": "info",
+  "event_type": "preemption_started",
+  "intersection_id": "lozan",
+  "message": "Emergency pre-clear started for ambulance sim-ambulance-01 (ETA 22 s).",
+  "data": { "eta_s": 22, "lookahead_rank": 2 },
+  "correlation_id": "0b7d3f52-1e44-4b8a-a1c9-5d2e7f9a1b30",
+  "sim_time_s": 964.0,
+  "synthetic": true
+}

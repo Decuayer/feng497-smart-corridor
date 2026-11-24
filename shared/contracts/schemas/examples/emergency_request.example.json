@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "0b7d3f52-1e44-4b8a-a1c9-5d2e7f9a1b30",
+  "timestamp": "2026-11-24T08:16:03.500Z",
+  "vehicle_id": "sim-ambulance-01",
+  "vehicle_type": "ambulance",
+  "request_type": "request",
+  "priority": 1,
+  "source": "simulation",
+  "speed_mps": 13.9,
+  "approaching_intersection_id": "montro",
+  "route": { "intersection_ids": ["montro", "lozan", "alsancak_station"] },
+  "auth": { "verified": true, "method": "simulation" },
+  "sim": { "sumo_vehicle_id": "ambulance_0", "sim_time_s": 963.0 }
+}

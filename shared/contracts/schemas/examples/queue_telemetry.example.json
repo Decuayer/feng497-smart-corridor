@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "message_id": "6f1c2a3e-8a7b-4c1d-9e2f-0a1b2c3d4e5f",
+  "timestamp": "2026-11-24T08:15:00.120Z",
+  "intersection_id": "lozan",
+  "source_id": "edge-lozan-cam-01",
+  "inference_latency_ms": 62.4,
+  "model": { "name": "yolov8n", "version": "0.0.0-example", "precision": "fp16" },
+  "emergency_vehicle_detected": false,
+  "lanes": [
+    {
+      "lane_id": "lozan_n_1",
+      "approach": "north",
+      "queue_vehicles": 7,
+      "queue_length_m": 46.5,
+      "stopped_vehicles": 6,
+      "occupancy": 0.42,
+      "counts": { "car": 6, "light_commercial": 1, "bus": 0, "ambulance": 0, "fire_truck": 0 }
+    }
+  ]
+}

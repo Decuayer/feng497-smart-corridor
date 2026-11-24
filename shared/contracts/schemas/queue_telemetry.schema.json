@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:izmir-smart-corridor:contracts:queue_telemetry:0.1.0",
+  "title": "QueueTelemetry",
+  "description": "DRAFT v0.1.0. Lane-level queue telemetry published by an edge vision node for one intersection. Producer: edge/ (Nihat Efe Kargı). Consumer: backend/ (Ario Bashiri), forwarded to ai/ and dashboard/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "message_id", "timestamp", "intersection_id", "source_id", "lanes"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "message_id": { "type": "string", "format": "uuid" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Capture time of the analysed frame, ISO 8601 with timezone (UTC recommended)."
+    },
+    "intersection_id": {
+      "enum": ["alsancak_station", "lozan", "montro", "basmane", "cankaya", "konak_pier"]
+    },
+    "source_id": { "type": "string", "minLength": 1, "description": "Edge device / camera identifier." },
+    "inference_latency_ms": { "type": "number", "minimum": 0, "description": "End-to-end frame-to-telemetry latency. Target < 85 ms." },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "precision": { "enum": ["fp32", "fp16", "int8"] }
+      }
+    },
+    "emergency_vehicle_detected": { "type": "boolean" },
+    "lanes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lane_id", "queue_vehicles", "queue_length_m"],
+        "properties": {
+          "lane_id": { "type": "string", "description": "ROI lane identifier. Mapping to SUMO lane ids: TBD (Nihat + Öykü)." },
+          "approach": { "type": "string", "description": "Approach name or bearing, e.g. 'north'." },
+          "queue_vehicles": { "type": "integer", "minimum": 0 },
+          "queue_length_m": { "type": "number", "minimum": 0 },
+          "stopped_vehicles": { "type": "integer", "minimum": 0, "description": "Vehicles with speed < 0.1 m/s." },
+          "occupancy": { "type": "number", "minimum": 0, "maximum": 1 },
+          "waiting_time_s": { "type": "number", "minimum": 0, "description": "Optional estimate of cumulative waiting time W_l." },
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "car": { "type": "integer", "minimum": 0 },
+              "light_commercial": { "type": "integer", "minimum": 0 },
+              "bus": { "type": "integer", "minimum": 0 },
+              "ambulance": { "type": "integer", "minimum": 0 },
+              "fire_truck": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

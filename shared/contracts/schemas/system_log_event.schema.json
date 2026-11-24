@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:izmir-smart-corridor:contracts:system_log_event:0.1.0",
+  "title": "SystemLogEvent",
+  "description": "DRAFT v0.1.0 - to be confirmed by Ario Bashiri (backend log store). Structured event emitted by any module and stored centrally. Consumed by ai/decision_support (Demir Cücü) to generate grounded operator briefings and anomaly/incident summaries. Synthetic events generated from SUMO runs MUST set synthetic=true.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "timestamp", "source", "severity", "event_type", "message"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "enum": ["edge", "v2i", "backend", "ai", "simulation", "hardware", "dashboard"] },
+    "severity": { "enum": ["debug", "info", "warning", "error", "critical"] },
+    "event_type": {
+      "enum": [
+        "queue_threshold_exceeded",
+        "congestion_detected",
+        "incident_reported",
+        "accident_detected",
+        "lane_blocked",
+        "lane_cleared",
+        "emergency_request_received",
+        "preemption_started",
+        "preemption_ended",
+        "recovery_completed",
+        "signal_command_issued",
+        "signal_command_rejected",
+        "interlock_triggered",
+        "watchdog_fallback",
+        "link_lost",
+        "link_restored",
+        "fallback_webster_engaged",
+        "sensor_offline",
+        "sensor_online",
+        "forecast_alert",
+        "anomaly_detected",
+        "other"
+      ]
+    },
+    "intersection_id": {
+      "enum": ["alsancak_station", "lozan", "montro", "basmane", "cankaya", "konak_pier"]
+    },
+    "lane_id": { "type": "string" },
+    "message": { "type": "string", "minLength": 1, "maxLength": 500, "description": "Short human-readable description." },
+    "data": { "type": "object", "description": "Event-specific structured payload (numbers, ids)." },
+    "correlation_id": { "type": "string", "description": "Links related events, e.g. an emergency request_id." },
+    "sim_time_s": { "type": "number", "minimum": 0 },
+    "synthetic": { "type": "boolean", "default": false }
+  }
+}

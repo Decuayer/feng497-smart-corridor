@@ -1,0 +1,75 @@
+# =====================================================================
+# Intersection registry - STATUS: DRAFT (v0.1.0)
+# Owner of the real SUMO IDs: Öykü Doğa Dabak (simulation/)
+# Consumers: ai/, backend/, dashboard/, edge/, hardware/
+#
+# `id` is the stable cross-team identifier used in every message
+# (see shared/contracts/schemas/*.schema.json). Do not rename an id
+# without a PR reviewed by all module owners.
+# =====================================================================
+status: DRAFT
+version: 0.1.0
+
+pilot_area:
+  name: Alsancak–Konak arterial network, Izmir
+  bbox:
+    lat_min: 38.4150
+    lat_max: 38.4410
+    lon_min: 27.1250
+    lon_max: 27.1550
+  emergency_kpi_corridor_length_km: 3.0
+  # Ordered intersection ids along the 3 km pilot corridor: TBD (Öykü + Demir).
+  emergency_kpi_corridor_order: TBD
+
+intersections:
+  - id: alsancak_station
+    display_name: Alsancak Station
+    sumo_tls_id: TBD            # real network, to be provided by Öykü
+    prototype_fixture: null     # not modelled in ai/sim_fixtures/osm_alsancak_v0
+
+  - id: lozan
+    display_name: Lozan
+    sumo_tls_id: TBD
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "cluster1886774622_1886774641_1886774650_2269332600_#4more"
+      legacy_agent_id: lozan
+
+  - id: montro
+    display_name: Montrö
+    sumo_tls_id: TBD
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "cluster13283235321_1886602288_71240389_71240420_#2more"
+      legacy_agent_id: montro
+
+  - id: basmane
+    display_name: Basmane
+    sumo_tls_id: TBD
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "cluster14455445_14456558_1665255536_1937306516_#6more"
+      legacy_agent_id: dokuz_eylul
+      # ASSUMPTION: the prototype agent `dokuz_eylul` (9 Eylül Meydanı) is
+      # treated as the Basmane intersection. To be confirmed by Öykü.
+
+  - id: cankaya
+    display_name: Çankaya
+    sumo_tls_id: TBD
+    prototype_fixture: null
+
+  - id: konak_pier
+    display_name: Konak Pier
+    sumo_tls_id: TBD
+    prototype_fixture: null
+
+# Modelled only as secondary regions for macro routing (no signal control).
+secondary_regions:
+  - id: bornova
+    display_name: Bornova
+  - id: karsiyaka
+    display_name: Karşıyaka
+  - id: balcova
+    display_name: Balçova
+  - id: buca
+    display_name: Buca

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:izmir-smart-corridor:contracts:signal_command:0.1.0",
+  "title": "SignalCommand",
+  "description": "DRAFT v0.1.0. Requested next green phase for one intersection. Path: ai/ (Demir Cücü) -> backend/ (Ario Bashiri) -> ESP32 relay board (hardware/, Tolga Uçar). This is a REQUEST: the hardware green-conflict interlock and the 1000 ms watchdog (flashing-yellow fallback) remain authoritative and may reject or override it. Safety limits are encoded as bounds: green 10-60 s, yellow 3 s, all-red 1 s.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "command_id", "timestamp", "intersection_id", "sequence", "issuer", "mode", "target_phase", "transition"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "command_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "intersection_id": {
+      "enum": ["alsancak_station", "lozan", "montro", "basmane", "cankaya", "konak_pier"]
+    },
+    "sequence": { "type": "integer", "minimum": 0, "description": "Monotonically increasing per intersection; receivers drop out-of-order commands." },
+    "issuer": { "enum": ["marl_ppo", "marl_dqn", "emergency_preemption", "fixed_time", "webster", "manual_operator"] },
+    "mode": {
+      "enum": ["adaptive", "preemption", "recovery", "fallback_webster", "fixed_time"],
+      "description": "fallback_webster = local adaptive Webster mode used when the network/central link or the MARL policy fails."
+    },
+    "target_phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase_id", "green_duration_s"],
+      "properties": {
+        "phase_id": { "type": "string", "minLength": 1, "description": "Green phase id from the intersection's phase plan. Phase plans per intersection: TBD (Öykü + Tolga)." },
+        "green_duration_s": { "type": "number", "minimum": 10, "maximum": 60 }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["yellow_s", "all_red_s"],
+      "properties": {
+        "yellow_s": { "const": 3 },
+        "all_red_s": { "const": 1 }
+      }
+    },
+    "valid_for_ms": { "type": "integer", "minimum": 0, "description": "Command expiry. After expiry without a new command the controller keeps its local plan." },
+    "emergency_request_id": { "type": "string", "format": "uuid", "description": "Set when issuer = emergency_preemption or mode = recovery." },
+    "reason": { "type": "string", "maxLength": 200 }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "command_id": "9a2b4c6d-8e0f-4a1b-8c3d-5e7f9a1b3c5d",
+  "timestamp": "2026-11-24T08:16:04.000Z",
+  "intersection_id": "lozan",
+  "sequence": 1532,
+  "issuer": "emergency_preemption",
+  "mode": "preemption",
+  "target_phase": { "phase_id": "P2", "green_duration_s": 25 },
+  "transition": { "yellow_s": 3, "all_red_s": 1 },
+  "valid_for_ms": 5000,
+  "emergency_request_id": "0b7d3f52-1e44-4b8a-a1c9-5d2e7f9a1b30",
+  "reason": "Pre-clear for ambulance, ETA 22 s"
+}
