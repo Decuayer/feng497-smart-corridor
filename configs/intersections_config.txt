@@ -1,0 +1,51 @@
+
+LOZAN TLS ID: cluster1886774622_1886774641_1886774650_2269332600_#4more
+incLanes="866462563#0_0 732268593#2_0 732268593#2_1 739763293#0_0 739763293#0_1 899630555#0_0"
+
+<tlLogic id="cluster1886774622_1886774641_1886774650_2269332600_#4more" type="delay_based" programID="0" offset="0">
+    <phase duration="20" state="rrrrGGGGrGGrrrrr" minDur="13" maxDur="50"/>
+    <phase duration="6"  state="rrrryyyyryyrrrrr"/>
+    <phase duration="6"  state="rrrrrrrrGrrGGrrr" minDur="13" maxDur="50"/>
+    <phase duration="6"  state="rrrrrrrryrryyrrr"/>
+    <phase duration="20" state="GrrrrrrrrrrrrGGG" minDur="5" maxDur="50"/>
+    <phase duration="6"  state="Grrrrrrrrrrrryyy"/>
+    <phase duration="20" state="GGGGGrrrrrrrrrrr" minDur="5" maxDur="50"/>
+    <phase duration="6"  state="yyyyGrrrrrrrrrrr"/>
+</tlLogic>
+
+
+MONTRO TLS ID: cluster13283235321_1886602288_71240389_71240420_#2more
+incLanes="178294394#0_0 178294394#0_1 857609282#2_0 900351175#1_0 900351175#1_1 55971741#5_0 55971741#5_1"
+
+<tlLogic id="cluster13283235321_1886602288_71240389_71240420_#2more" type="static" programID="0" offset="0">
+    <phase duration="33" state="GGgrrrGGGgrrr"/>
+    <phase duration="6"  state="yyyrrryyyyrrr"/>
+    <phase duration="33" state="rrrGGrrrrrGGr"/>
+    <phase duration="6"  state="rrryyrrrrryyr"/>
+    <phase duration="6"  state="rrrrrGrrrrrrG"/>
+    <phase duration="6"  state="rrrrryrrrrrry"/>
+</tlLogic>
+
+
+9EYLULMEYDANI TLS ID: cluster14455445_14456558_1665255536_1937306516_#6more
+incLanes="857609284#0_0 857609284#0_1 1360998513#1_0 1360998513#1_1 1360998513#1_2 711138940#1_0 711138940#1_1 711138940#1_2"
+
+<phase duration="39" state="GGGGGggrrrrrrrrrGGGGggggg"/>
+    <phase duration="6"  state="yyyyyyyrrrrrrrrrGGyyyyyyy"/>
+    <phase duration="38" state="rrrrrrrGGGGGGGGGGGrrrrrrr"/>
+    <phase duration="6"  state="rrrrrrryyyyyyyyyyyrrrrrrr"/>
+    <phase duration="1"  state="rrrrrrrrrrrrrrrrrrrrrrrrr"/>
+</tlLogic>
+
+
+
+
+
+
+
+
+id="cluster14455445_14456558_1665255536_1937306516_#6more" type="traffic_light"
+
+
+<tlLogic id="cluster14455445_14456558_1665255536_1937306516_#6more"
+
