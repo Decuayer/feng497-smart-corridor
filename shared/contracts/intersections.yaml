@@ -25,7 +25,11 @@ intersections:
   - id: alsancak_station
     display_name: Alsancak Station
     sumo_tls_id: TBD            # real network, to be provided by Öykü
-    prototype_fixture: null     # not modelled in ai/sim_fixtures/osm_alsancak_v0
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "14455843"
+      # DRAFT candidate chosen by location (Ziya Gökalp Blv. / Ali Çetinkaya Blv.); to be confirmed by Öykü.
+      candidate: true
 
   - id: lozan
     display_name: Lozan
@@ -56,12 +60,20 @@ intersections:
   - id: cankaya
     display_name: Çankaya
     sumo_tls_id: TBD
-    prototype_fixture: null
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "joinedS_12610689253_2503083465"
+      # DRAFT candidate chosen by location (Gazi Blv. / Gazi Osman Paşa Blv.); to be confirmed by Öykü.
+      candidate: true
 
   - id: konak_pier
     display_name: Konak Pier
     sumo_tls_id: TBD
-    prototype_fixture: null
+    prototype_fixture:
+      fixture: ai/sim_fixtures/osm_alsancak_v0
+      tls_id: "joinedS_5306649169_cluster_14456360_255783303"
+      # DRAFT candidate chosen by location (Gazi Blv. / Cumhuriyet Blv.); to be confirmed by Öykü.
+      candidate: true
 
 # Modelled only as secondary regions for macro routing (no signal control).
 secondary_regions:
