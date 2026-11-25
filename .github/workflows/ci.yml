@@ -106,3 +106,26 @@ jobs:
           npm ci
           npm run lint
           npm test --if-present
+
+  ci-passed:
+    # Single status check for branch rulesets: require only "CI passed".
+    # Fails if any job failed or was cancelled; skipped jobs are OK.
+    name: CI passed
+    if: always()
+    needs: [repo-hygiene, python-lint, python-tests, dashboard]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results of all CI jobs
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | python3 -c '
+          import json, sys
+          needs = json.load(sys.stdin)
+          bad = {job: v["result"] for job, v in needs.items() if v["result"] not in ("success", "skipped")}
+          for job, v in needs.items():
+              print(job + ": " + v["result"])
+          if bad:
+              print("::error::CI failed: " + json.dumps(bad))
+              sys.exit(1)
+          '
