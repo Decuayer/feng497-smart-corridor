@@ -26,8 +26,10 @@ toy_corridor:
     cankaya: J5
     konak_pier: J6
   corridor:
-    # Emergency KPI corridor: W -> E through all six junctions (3.0 km).
-    edges: [W_J1, J1_J2, J2_J3, J3_J4, J4_J5, J5_J6, J6_E]
+    routes:
+      eastbound: [W_J1, J1_J2, J2_J3, J3_J4, J4_J5, J5_J6, J6_E]   # 3.0 km
+      westbound: [E_J6, J6_J5, J5_J4, J4_J3, J3_J2, J2_J1, J1_W]
+    kpi_route: eastbound   # emergency KPI route
 
 osm_alsancak_v0:
   description: >-
@@ -39,10 +41,28 @@ osm_alsancak_v0:
     path: sim_fixtures/osm_alsancak_v0/osm.passenger.trips.xml
   # lozan / montro confirmed by street names; basmane = 9 Eylül Meydanı (ASSUMPTION);
   # alsancak_station / cankaya / konak_pier are DRAFT candidates until Öykü confirms.
-  agents:
+  agents: &osm_agents
     alsancak_station: "14455843"
     lozan: "cluster1886774622_1886774641_1886774650_2269332600_#4more"
     montro: "cluster13283235321_1886602288_71240389_71240420_#2more"
     basmane: "cluster14455445_14456558_1665255536_1937306516_#6more"
     cankaya: "joinedS_12610689253_2503083465"
     konak_pier: "joinedS_5306649169_cluster_14456360_255783303"
+
+osm_corridor:
+  description: >-
+    PLACEHOLDER corridor-focused scenario on the osm_alsancak_v0 network: the
+    original random background trips plus through traffic along the corridor
+    and cross traffic at each of the six agent lights, so that demand reaches
+    every controlled intersection. Not calibrated to IZUM counts.
+  net: sim_fixtures/osm_alsancak_v0/osm.net.xml.gz
+  demand:
+    type: corridor_od
+    background: sim_fixtures/osm_alsancak_v0/osm.passenger.trips.xml
+    # ASSUMPTION placeholder rates (veh/h at scale 1.0)
+    through_vph: {alsancak_to_konak: 300, konak_to_alsancak: 300}
+    cross_vph_per_approach: 100
+  agents: *osm_agents
+  corridor:
+    file: sim_fixtures/osm_alsancak_v0/corridor.yaml
+    kpi_route: konak_to_alsancak   # 2.97 km, closest to the 3 km pilot corridor

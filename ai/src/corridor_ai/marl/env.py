@@ -11,6 +11,12 @@ Episode:
   (default 5). All lights are advanced each second by their PhaseMachine;
 * the episode is truncated (not terminated) after ``horizon_s`` controlled seconds.
 
+Emergency corridor (TASK-302): with ``ev_scenario=True`` emergency vehicles are
+inserted on the fixture's corridor route. With ``preempt=True`` a
+PreemptionManager overrides the agents of pre-cleared intersections every
+second. Their mask is KEEP-only and ``infos[agent]["preempted"]`` is True, so
+301b training can exclude those transitions.
+
 ``infos[agent]["action_mask"]`` holds the legal actions. An illegal action is
 replaced by the first legal one and counted in ``infos[agent]["illegal_actions"]``.
 At the end of an episode, ``infos[agent]["episode"]`` holds the SUMO metrics
@@ -30,6 +36,8 @@ from corridor_ai.common.config import ExperimentConfig
 from corridor_ai.common.registry import Fixture
 from corridor_ai.control.command_sink import SignalCommandRecorder
 from corridor_ai.control.fixed_time import fixed_time_controller
+from corridor_ai.emergency.preemption import PreemptionManager
+from corridor_ai.emergency.scenario import write_ev_routes
 from corridor_ai.marl.actions import action_mask, action_to_request
 from corridor_ai.marl.observations import build_observation, observation_size
 from corridor_ai.marl.reward import RewardAccumulator
@@ -48,8 +56,13 @@ class CorridorParallelEnv(ParallelEnv):
         scale: float | None = None,
         command_log: Path | None = None,
         issuer: str = "marl_ppo",
+        ev_scenario: bool | None = None,
+        preempt: bool | None = None,
     ) -> None:
         self.fixture = fixture
+        self.preempt = cfg.emergency.enabled if preempt is None else preempt
+        self.ev_scenario = self.preempt if ev_scenario is None else ev_scenario
+        self.manager: PreemptionManager | None = None
         self.command_log = command_log
         self.issuer = issuer
         self.recorder: SignalCommandRecorder | None = None
@@ -91,14 +104,24 @@ class CorridorParallelEnv(ParallelEnv):
             self.sim.close()
         self._episode_seed = self.cfg.seed if seed is None else int(seed)
         scale = options.get("scale", self.scale)
+        extra = []
+        if self.ev_scenario:
+            end_s = self.cfg.sim.warmup_s + self.cfg.sim.horizon_s
+            extra.append(write_ev_routes(self.fixture, self.cfg, self._episode_seed, end_s))
         self.sim = CorridorSim(
-            self.fixture, self.cfg, seed=self._episode_seed, output_dir=self.output_dir, scale=scale
-        )
+            self.fixture, self.cfg, seed=self._episode_seed, output_dir=self.output_dir,
+            scale=scale, extra_route_files=extra,
+        )  # fmt: skip
         self.sim.start()
+        self.manager = None
+        if self.ev_scenario:
+            self.manager = PreemptionManager(self.fixture, self.cfg, enabled=self.preempt)
+            self.sim.second_hooks.append(self.manager.update)
         if self.command_log is not None:
             self.recorder = SignalCommandRecorder(
                 self.agent_tls, self.issuer, "adaptive",
                 valid_for_ms=self.cfg.env.decision_interval_s * 1000, path=self.command_log,
+                mode_override=self.manager.command_mode if self.manager else None,
             )  # fmt: skip
         agent_tls = set(self.agent_tls.values())
         background = [t for t in self.models if t not in agent_tls]
@@ -122,8 +145,11 @@ class CorridorParallelEnv(ParallelEnv):
     def step(self, actions: dict[str, int]):
         assert self.sim is not None and self.agents, "call reset() first"
         requests: dict[str, int | None] = {}
+        preempted = self._preempted()
         for agent in self.agents:
             tls = self.agent_tls[agent]
+            if tls in preempted:
+                continue  # emergency preemption overrides this agent
             mask = self._mask(agent)
             action = int(actions.get(agent, 0))
             if not (0 <= action < len(mask)) or not mask[action]:
@@ -133,7 +159,10 @@ class CorridorParallelEnv(ParallelEnv):
 
         for second in range(self.cfg.env.decision_interval_s):
             bg = self._background.act(self.sim) if self._background else {}
-            self.sim.step_second({**bg, **(requests if second == 0 else {})})
+            merged = {**bg, **(requests if second == 0 else {})}
+            if self.manager is not None and self.preempt:
+                merged.update(self.manager.requests(self.sim))
+            self.sim.step_second(merged)
             for acc in self._rewards.values():
                 acc.observe_second(self.sim.api)
             if self.sim.done:
@@ -146,6 +175,7 @@ class CorridorParallelEnv(ParallelEnv):
             infos[agent] = {
                 "action_mask": self._mask(agent),
                 "illegal_actions": self._illegal[agent],
+                "preempted": self.agent_tls[agent] in self._preempted(),
                 **rinfo,
             }
         obs = self._observations()
@@ -168,9 +198,19 @@ class CorridorParallelEnv(ParallelEnv):
             self.sim.close()
 
     # --------------------------------------------------------- internals
+    def _preempted(self) -> set[str]:
+        if self.manager is None or not self.preempt:
+            return set()
+        return self.manager.preempted_tls
+
     def _mask(self, agent: str) -> np.ndarray:
         assert self.sim is not None
-        machine = self.sim.machines[self.agent_tls[agent]]
+        tls = self.agent_tls[agent]
+        if tls in self._preempted():
+            mask = np.zeros(self.k_max + 1, dtype=bool)
+            mask[0] = True  # KEEP only: the emergency corridor controls this light
+            return mask
+        machine = self.sim.machines[tls]
         return action_mask(machine, self.k_max, self.cfg.limits, self.cfg.env)
 
     def _observations(self) -> dict[str, np.ndarray]:
@@ -198,5 +238,7 @@ class CorridorParallelEnv(ParallelEnv):
         assert self.sim is not None
         metrics = self.sim.close(min_depart_s=self.cfg.sim.warmup_s)
         metrics["illegal_actions"] = float(sum(self._illegal.values()))
+        if self.manager is not None:
+            metrics["preemptions"] = float(len(self.manager.activations))
         metrics["seed"] = float(self._episode_seed)
         return metrics

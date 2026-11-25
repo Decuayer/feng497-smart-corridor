@@ -70,12 +70,14 @@ class SignalCommandRecorder:
         green_for: dict[str, list[int]] | None = None,  # TLS -> planned greens (plans)
         valid_for_ms: int | None = None,
         path: Path | None = None,
+        mode_override=None,  # callable tls -> (issuer, mode, emergency_request_id) | None
     ) -> None:
         self.agent_tls = agent_tls
         self.issuer, self.mode = issuer, mode
         self.green_for = green_for or {}
         self.valid_for_ms = valid_for_ms
         self.path = path
+        self.mode_override = mode_override
         self.messages: list[dict] = []
         self._seq = {cid: 0 for cid in agent_tls}
         self._switches: dict[str, int] = {}
@@ -93,12 +95,21 @@ class SignalCommandRecorder:
             self._switches[tls] = m.switches
             plan = self.green_for.get(tls)
             green = float(plan[m.phase]) if plan else float(sim.cfg.limits.min_green_s)
+            issuer, mode, request_id = self.issuer, self.mode, None
+            override = self.mode_override(tls) if self.mode_override else None
+            if override is not None:
+                issuer = override[0] or issuer
+                mode, request_id = override[1], override[2]
+                if mode == "preemption":
+                    green = float(sim.cfg.limits.min_green_s)  # held while the EV approaches
             self._seq[cid] += 1
             msg = build_signal_command(
-                cid, self._seq[cid], m.phase, green, self.issuer, self.mode, sim.time_s,
+                cid, self._seq[cid], m.phase, green, issuer, mode, sim.time_s,
                 self.valid_for_ms, yellow_s=sim.cfg.limits.yellow_s,
                 all_red_s=sim.cfg.limits.all_red_s,
             )  # fmt: skip
+            if request_id is not None:
+                msg["emergency_request_id"] = request_id
             validate("signal_command", msg)
             self.messages.append(msg)
             if self.path is not None:

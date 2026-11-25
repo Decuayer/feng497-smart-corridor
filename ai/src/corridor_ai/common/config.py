@@ -120,6 +120,45 @@ class PPOConfig:
 
 
 @dataclass(frozen=True)
+class EmergencyConfig:
+    """Proactive emergency green corridor (TASK-302); see ai/docs/emergency_corridor.md."""
+
+    enabled: bool = False  # False = observe emergency vehicles only (baseline runs)
+    lookahead: int = 2  # pre-clear the current + next `lookahead` agent intersections
+    startup_lost_s: float = 2.0  # queue-flush model: startup + n_queued * headway
+    saturation_headway_s: float = 2.0
+    margin_s: float = 3.0
+    min_speed_frac: float = 0.6  # nominal ETA uses max(EMA speed, frac * free speed)
+    reservice: bool = True  # leave a held green early if it would exceed max green
+    # vehicles counted for the flush time: "vehicles_ahead" (all vehicles between the EV and
+    # the stop line, per lane; default) or "halted" (only queued vehicles)
+    flush_count: str = "vehicles_ahead"
+    # hold budget: a pre-clear held this long without the EV passing is released
+    # ("hold_timeout"); that EV/intersection may then only re-activate on its nominal
+    # (observed-speed) ETA. Prevents starving cross streets for a blocked EV. ASSUMPTION.
+    max_hold_s: int = 90
+    ev_vtypes: tuple[str, ...] = ("emergency", "firebrigade")
+    # simulated emergency vehicles (placeholder scenario; EVs obey signals)
+    ev_speed_factor: float = 1.3
+    ev_count: int = 10
+    ev_first_after_warmup_s: int = 120
+    ev_last_before_end_s: int = 900
+    ev_firebrigade_share: float = 0.3
+    # recovery measurement (vs the matched run without preemption)
+    recovery_tolerance_frac: float = 0.1
+    recovery_tolerance_abs: float = 2.0
+    recovery_sustain_s: int = 60
+    recovery_smooth_s: int = 30
+    recovery_bound_s: int = 180
+
+    def __post_init__(self) -> None:
+        if self.lookahead < 0:
+            raise ValueError("lookahead must be >= 0")
+        if self.flush_count not in ("vehicles_ahead", "halted"):
+            raise ValueError("flush_count must be 'vehicles_ahead' or 'halted'")
+
+
+@dataclass(frozen=True)
 class ExperimentConfig:
     name: str = "experiment"
     fixture: str = "toy_corridor"
@@ -128,6 +167,7 @@ class ExperimentConfig:
     sim: SimConfig = field(default_factory=SimConfig)
     env: EnvConfig = field(default_factory=EnvConfig)
     ppo: PPOConfig = field(default_factory=PPOConfig)
+    emergency: EmergencyConfig = field(default_factory=EmergencyConfig)
 
 
 # --------------------------------------------------------------------------
