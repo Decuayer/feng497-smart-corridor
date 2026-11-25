@@ -1,14 +1,14 @@
 # ai/: MARL signal control, emergency green corridor, forecasting and LLM decision support
 
 - **Owner:** Demir Cücü (CE)
-- **Status:** in progress. TASK-301a done (signal-control layer, environment, baselines, PPO smoke training); TASK-302 done (emergency green corridor). TASK-301b and 303 are planned.
+- **Status:** in progress. TASK-301a done (signal-control layer, environment, baselines, PPO smoke training); TASK-302 **partially met** (emergency green corridor; see results). TASK-301b and 303 are planned.
 
 ## Purpose
 
 | Task | Scope | Status |
 |---|---|---|
 | TASK-301 | Multi-agent RL signal control (PPO / DQN, PyTorch), one agent per intersection, action masking under the signal safety limits; fixed-time and Webster baselines; TensorBoard | 301a done, 301b planned |
-| TASK-302 | Proactive emergency green corridor: pre-clear the current and next two intersections, then hand control back to MARL safely | done |
+| TASK-302 | Proactive emergency green corridor: pre-clear the current and next two intersections, then hand control back to MARL safely | partially met; MUST follow-ups [#4](https://github.com/Decuayer/feng497-smart-corridor/issues/4), [#5](https://github.com/Decuayer/feng497-smart-corridor/issues/5) |
 | TASK-303 | 15-min density forecasting (rolling-origin backtests) and an LLM decision-support agent with grounded briefings and incident summaries | planned |
 
 The original task list (Turkish) is in [`docs/tasks_tr.md`](docs/tasks_tr.md).
@@ -104,10 +104,20 @@ How to read this:
 
 ### 302: emergency green corridor (acceptance)
 
+**Status: PARTIALLY MET** (accepted as such).
+
+- The ≥ 50 % EV transit-time target is met **only on the toy corridor at peak demand (scale 1.5) against fixed-time** (50.7 %). This is **not** a general outcome.
+- **Against MARL** the improvement is bounded by a physical ceiling of about **26 % at scale 1.0**: EVs obey signals and other drivers do not yield, so a preempted EV still follows cars (empty-corridor EV time 178 s vs MARL baseline 241 s).
+- **OSM placeholder results are not final.** With fixed-time base control, preemption gridlocked 2 of 10 seeds. The placeholder's fixed-time baseline is near saturation.
+- Open MUST tasks:
+  - [#4](https://github.com/Decuayer/feng497-smart-corridor/issues/4): spillback-aware activation, required before the final evaluation on the real digital twin;
+  - [#5](https://github.com/Decuayer/feng497-smart-corridor/issues/5): rerun with drivers yielding (SUMO `bluelight`) and report both variants. This decides whether 50 % is reachable at all.
+- Safety acceptance met: 0 violations and 0 drift in all 240 runs.
+
 > **Relative improvement on a placeholder fixture, not the real digital twin.**
 
 Setup:
-- 10 EVs per run on the KPI corridor route; EVs **obey signals** (no rescue lane) with speedFactor 1.3;
+- 10 EVs per run on the KPI corridor route (the plan said 20; 10 leaves room to measure recovery between consecutive preemptions at the same intersection); EVs **obey signals** (no rescue lane) with speedFactor 1.3;
 - horizon 3600 s; held-out seeds 1000–1009;
 - baseline = same scenario, same seeds, same EV insertion times, **no preemption** (ASSUMPTION);
 - improvement = 1 − median(preempt) / median(baseline);
@@ -118,11 +128,11 @@ Full tables: `ai/runs/emergency/<fixture>/302_acceptance/summary.md`. Method: [`
 | Fixture | Base controller | Scale | EV transit median: base → preempt (s) | Improvement | ≥ 50 % | Recovery ≤ 180 s (of releases) | Non-EV travel Δ | Violations / drift |
 |---|---|---|---|---|---|---|---|---|
 | toy_corridor (3.0 km) | fixed-time | 1.0 | 447 → 229 | 48.8 % | no | 88 % | −24 % | 0 / 0 |
-| toy_corridor | fixed-time | **1.5 (peak)** | 613 → 302 | **50.7 %** | **yes** | 72 % | −27 % | 0 / 0 |
+| toy_corridor | fixed-time | **1.5 (peak)** | 613 → 302 | **50.7 %** | **yes (only case)** | 72 % | −27 % | 0 / 0 |
 | toy_corridor | MARL | 1.0 | 241 → 222 | 7.7 % | no | 97 % | −0.2 % | 0 / 0 |
 | toy_corridor | MARL | 1.5 | 290 → 245 | 15.7 % | no | 80 % | −0.5 % | 0 / 0 |
-| osm_corridor (2.97 km) | fixed-time | 1.0 | 451 → 396 | 12.2 % (mean −20.6 %) | no | 53 % | +11 % | 0 / 0 |
-| osm_corridor | MARL | 1.0 | 436 → 370 | 15.1 % | no | 72 % | +1.3 % | 0 / 0 |
+| osm_corridor (2.97 km) | fixed-time | 1.0 | 451 → 396 | 12.2 % (mean −20.6 %), **not final** | no | 53 % | +11 % | 0 / 0 |
+| osm_corridor | MARL | 1.0 | 436 → 370 | 15.1 %, **not final** | no | 72 % | +1.3 % | 0 / 0 |
 
 How to read this:
 - **Physical ceiling.** On an empty toy corridor a preempted EV needs 178 s. Without a rescue lane, an EV behind cars travels at about 50 km/h. Against the MARL baseline (241 s), even a perfect corridor could save at most about 26 % at scale 1.0. Preempted EVs already wait only about 9 s in total.
