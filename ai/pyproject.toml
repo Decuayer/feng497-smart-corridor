@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "corridor-ai"
+version = "0.1.0"
+description = "Izmir Smart Corridor - MARL signal control, emergency green corridor, forecasting and LLM decision support"
+readme = "README.md"
+license = "MIT"
+# ASSUMPTION: >= 3.12 because of the pinned numpy/pandas/scipy versions; tested on 3.14.4.
+requires-python = ">=3.12"
+authors = [{ name = "Demir Cücü" }]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "sumo: needs a SUMO installation (deselected in CI with -m 'not sumo')",
+  "slow: long-running test",
+]
+addopts = "-ra"
+
+# Lint/format settings mirror the repository root (black has no "extend").
+[tool.ruff]
+extend = "../pyproject.toml"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]

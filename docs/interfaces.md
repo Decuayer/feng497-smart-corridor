@@ -8,12 +8,12 @@ Defined in [`intersections.yaml`](../shared/contracts/intersections.yaml) and us
 
 | id | Display name | SUMO TLS id (real network) | Prototype fixture |
 |---|---|---|---|
-| `alsancak_station` | Alsancak Station | TBD (Öykü) | not modelled |
+| `alsancak_station` | Alsancak Station | TBD (Öykü) | DRAFT candidate (see yaml) |
 | `lozan` | Lozan | TBD (Öykü) | yes |
 | `montro` | Montrö | TBD (Öykü) | yes |
 | `basmane` | Basmane | TBD (Öykü) | yes, as legacy agent `dokuz_eylul` (**ASSUMPTION**) |
-| `cankaya` | Çankaya | TBD (Öykü) | not modelled |
-| `konak_pier` | Konak Pier | TBD (Öykü) | not modelled |
+| `cankaya` | Çankaya | TBD (Öykü) | DRAFT candidate (see yaml) |
+| `konak_pier` | Konak Pier | TBD (Öykü) | DRAFT candidate (see yaml) |
 
 ## Message flows
 

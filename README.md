@@ -130,7 +130,7 @@ With the pip package, `SUMO_HOME` is `<venv>/lib/python<X.Y>/site-packages/sumo`
 
 | Module | Quick start | Status |
 |---|---|---|
-| `ai/` | `cd ai/prototype && python evaluate.py` (legacy prototype; see [ai/README.md](ai/README.md) for known issues) | in progress |
+| `ai/` | `pip install -r ai/requirements-dev.txt && pip install -e ai --no-deps`, then the one-line experiments in [ai/README.md](ai/README.md#experiments-one-line-each) | in progress |
 | `simulation/` | see [simulation/README.md](simulation/README.md) | planned |
 | `backend/` | see [backend/README.md](backend/README.md) | planned |
 | `dashboard/` | see [dashboard/README.md](dashboard/README.md) | planned |

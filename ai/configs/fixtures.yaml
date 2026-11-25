@@ -1,0 +1,48 @@
+# =====================================================================
+# Simulation fixtures available to ai/.
+# ALL FIXTURES ARE PLACEHOLDERS - not the real digital twin (owned by
+# Öykü Doğa Dabak in simulation/). Results on them are relative
+# improvements on a placeholder fixture only.
+#
+# agents: contract intersection id (shared/contracts/intersections.yaml)
+#         -> SUMO traffic-light id in this fixture.
+# Every other traffic light in the network runs a safety-compliant
+# fixed-time plan derived from its original program.
+# =====================================================================
+
+toy_corridor:
+  description: >-
+    netgenerate-style straight arterial, 6 signalised 4-arm junctions J1..J6,
+    500 m spacing, 3.0 km from W to E, 2+2 arterial lanes, 1+1 side streets.
+  net: sim_fixtures/toy_corridor/toy.net.xml.gz
+  demand:
+    type: toy_od
+  # ASSUMPTION: placeholder mapping in corridor order (W -> E).
+  agents:
+    alsancak_station: J1
+    lozan: J2
+    montro: J3
+    basmane: J4
+    cankaya: J5
+    konak_pier: J6
+  corridor:
+    # Emergency KPI corridor: W -> E through all six junctions (3.0 km).
+    edges: [W_J1, J1_J2, J2_J3, J3_J4, J4_J5, J5_J6, J6_E]
+
+osm_alsancak_v0:
+  description: >-
+    OSM-wizard export of central Izmir (2026-10-21, netedit-edited); 29 traffic
+    lights, all inside the pilot bbox. Network extent is larger than the pilot area.
+  net: sim_fixtures/osm_alsancak_v0/osm.net.xml.gz
+  demand:
+    type: file
+    path: sim_fixtures/osm_alsancak_v0/osm.passenger.trips.xml
+  # lozan / montro confirmed by street names; basmane = 9 Eylül Meydanı (ASSUMPTION);
+  # alsancak_station / cankaya / konak_pier are DRAFT candidates until Öykü confirms.
+  agents:
+    alsancak_station: "14455843"
+    lozan: "cluster1886774622_1886774641_1886774650_2269332600_#4more"
+    montro: "cluster13283235321_1886602288_71240389_71240420_#2more"
+    basmane: "cluster14455445_14456558_1665255536_1937306516_#6more"
+    cankaya: "joinedS_12610689253_2503083465"
+    konak_pier: "joinedS_5306649169_cluster_14456360_255783303"
