@@ -95,3 +95,26 @@ def test_command_log_is_schema_valid(tmp_path):
         validate("signal_command", msg)
         assert msg["sequence"] > seqs.get(msg["intersection_id"], 0)
         seqs[msg["intersection_id"]] = msg["sequence"]
+
+
+def test_dqn_training_smoke(tmp_path, monkeypatch):
+    import corridor_ai.marl.train as tr
+    from corridor_ai.common.config import load_experiment_config as load
+
+    monkeypatch.setattr(tr, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(tr, "CHECKPOINT_DIR", tmp_path / "ckpt")
+    cfg = load(
+        "ai/configs/marl_dqn.yaml",
+        overrides={
+            "sim.horizon_s": 300,
+            "dqn.episodes": 2,
+            "dqn.learning_starts": 100,
+            "dqn.eval_every": 1,
+            "dqn.checkpoint_every": 0,
+            "name": "t",
+        },
+    )
+    out = tr.train(cfg, "smoke")
+    assert out["checkpoint"].exists()
+    lines = (out["run_dir"] / "episodes.csv").read_text().splitlines()
+    assert len(lines) == 3 and "td_loss" in lines[0]

@@ -1,13 +1,17 @@
 """Compare controllers on identical scenarios and seeds.
 
     python -m corridor_ai.marl.evaluate --fixture toy_corridor \
-        --controllers fixed_time webster ppo --checkpoint <path/to/model_final.pt> \
+        --controllers fixed_time webster --policy ippo_s0=<ckpt> ippo_s1=<ckpt> dqn_s0=<ckpt> \
+        --group ippo=ippo_s0,ippo_s1,ippo_s2 \
         --seeds 1000 1001 1002 --scales 1.0
 
 Controllers:
 * ``fixed_time``  original phase order, greens clamped to [10, 60] s (control/fixed_time.py)
 * ``webster``     Webster cycle/splits from flows measured on seed + offset (control/webster.py)
-* ``ppo``         trained IPPO policy, greedy (argmax over legal actions)
+* ``--policy LABEL=PATH``  trained policies (IPPO or DQN, read from the checkpoint),
+                  greedy (argmax over legal actions); ``--checkpoint`` = label ``ppo``
+* ``--group LABEL=a,b,c``   aggregate row: per evaluation seed, the mean over the
+                  member policies (e.g. the three IPPO training seeds)
 * ``actuated``    REFERENCE ONLY: the network's own SUMO programs, no safety
                   enforcement (yellow 6 s etc.); safety violations are reported
 
@@ -99,20 +103,41 @@ def run_plan_controller(
     return sim.close(min_depart_s=cfg.sim.warmup_s)
 
 
-def run_ppo(
+def checkpoint_algo(checkpoint: Path) -> str:
+    import torch
+
+    return torch.load(checkpoint, map_location="cpu", weights_only=False).get("algo", "ppo")
+
+
+def run_policy(
     fixture: Fixture, cfg: ExperimentConfig, checkpoint: Path, seed: int, scale: float, out: Path
 ) -> dict[str, float]:
+    """Greedy evaluation of a trained IPPO or DQN checkpoint."""
+    from corridor_ai.marl.agents.dqn import DQNAgent
     from corridor_ai.marl.agents.ppo import PPOAgent
     from corridor_ai.marl.env import CorridorParallelEnv
-    from corridor_ai.marl.train import run_episode
+    from corridor_ai.marl.train import run_dqn_episode, run_episode
 
     env = CorridorParallelEnv(fixture, cfg, output_dir=out)
-    agent, _ = PPOAgent.load(checkpoint, cfg.ppo)
-    if agent.net.obs_dim != env.obs_dim:
-        raise ValueError(f"checkpoint obs_dim {agent.net.obs_dim} != env obs_dim {env.obs_dim}")
-    _, _, metrics = run_episode(env, agent, seed, scale, deterministic=True, collect=False)
-    env.close()
+    try:
+        if checkpoint_algo(checkpoint) == "dqn":
+            agent, _ = DQNAgent.load(checkpoint, cfg.dqn)
+            dim = agent.q.obs_dim
+        else:
+            agent, _ = PPOAgent.load(checkpoint, cfg.ppo)
+            dim = agent.net.obs_dim
+        if dim != env.obs_dim:
+            raise ValueError(f"checkpoint obs_dim {dim} != env obs_dim {env.obs_dim}")
+        if isinstance(agent, DQNAgent):
+            _, metrics, _, _ = run_dqn_episode(env, agent, seed, scale)
+        else:
+            _, _, metrics = run_episode(env, agent, seed, scale, deterministic=True, collect=False)
+    finally:
+        env.close()
     return metrics
+
+
+run_ppo = run_policy  # backwards compatibility
 
 
 def _ci95(values: list[float]) -> float:
@@ -120,6 +145,55 @@ def _ci95(values: list[float]) -> float:
     if n < 2:
         return float("nan")
     return float(sstats.t.ppf(0.975, n - 1) * np.std(values, ddof=1) / math.sqrt(n))
+
+
+def significance_lines(rows: list[dict]) -> list[str]:
+    """Paired Wilcoxon signed-rank tests (per evaluation seed) vs fixed-time and Webster."""
+    out = ["## Paired comparison vs baselines (Wilcoxon signed-rank over seeds)", "",
+           "| Scale | Controller | vs | Δ waiting | p (waiting) | Δ travel | p (travel) |",
+           "|---|---|---|---|---|---|---|"]  # fmt: skip
+    for scale in sorted({r["scale"] for r in rows}):
+        sub = [r for r in rows if r["scale"] == scale]
+        names = list(dict.fromkeys(r["controller"] for r in sub))
+        for base in ("fixed_time", "webster"):
+            if base not in names:
+                continue
+            b = {r["seed"]: r for r in sub if r["controller"] == base}
+            for c in names:
+                if c in ("fixed_time", "webster", "actuated"):
+                    continue
+                x = {r["seed"]: r for r in sub if r["controller"] == c}
+                seeds = sorted(set(b) & set(x))
+                cells = []
+                for m in ("mean_waiting_time_s", "mean_travel_time_s"):
+                    bv = np.array([b[s][m] for s in seeds])
+                    xv = np.array([x[s][m] for s in seeds])
+                    d = 100 * (xv.mean() - bv.mean()) / bv.mean()
+                    try:
+                        pv = sstats.wilcoxon(xv, bv).pvalue if len(seeds) > 1 else float("nan")
+                    except ValueError:
+                        pv = float("nan")
+                    cells += [f"{d:+.1f} %", f"{pv:.4f}"]
+                out.append(f"| {scale:g} | {c} | {base} | " + " | ".join(cells) + " |")
+    out.append("")
+    return out
+
+
+def add_group_rows(rows: list[dict], groups: dict[str, list[str]]) -> list[dict]:
+    """Per (scale, seed): mean of the member controllers' metrics."""
+    extra = []
+    for label, members in groups.items():
+        for scale in sorted({r["scale"] for r in rows}):
+            for seed in sorted({r["seed"] for r in rows}):
+                mem = [r for r in rows if r["scale"] == scale and r["seed"] == seed
+                       and r["controller"] in members]  # fmt: skip
+                if len(mem) != len(members):
+                    continue
+                row = {"fixture": mem[0]["fixture"], "controller": label, "scale": scale,
+                       "seed": seed}  # fmt: skip
+                row |= {k: float(np.mean([m[k] for m in mem])) for k in METRICS}
+                extra.append(row)
+    return rows + extra
 
 
 def write_summary(rows: list[dict], fixture: Fixture, cfg: ExperimentConfig, path: Path) -> str:
@@ -159,6 +233,7 @@ def write_summary(rows: list[dict], fixture: Fixture, cfg: ExperimentConfig, pat
                 cells.append(cell)
             lines.append(f"| {c} | " + " | ".join(cells) + " |")
         lines.append("")
+    lines += significance_lines(rows)
     lines.append(
         "`actuated` = the network's own SUMO programs; reference only, not safety-compliant."
     )
@@ -172,22 +247,29 @@ def evaluate(
     controllers: list[str],
     seeds: list[int],
     scales: list[float],
-    checkpoint: Path | None,
+    checkpoint: Path | None = None,
     out_dir: Path | None = None,
+    policies: dict[str, Path] | None = None,
+    groups: dict[str, list[str]] | None = None,
 ) -> Path:
     fixture = load_fixture(cfg.fixture)
     out_dir = out_dir or RUNS_DIR / "eval" / fixture.name / datetime.now().strftime("%Y%m%d-%H%M%S")
     out_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict] = []
     plan_log: dict = {}
+    policies = dict(policies or {})
+    if checkpoint is not None:
+        policies.setdefault("ppo", checkpoint)
+    controllers = [c for c in controllers if c != "ppo" or "ppo" not in policies]
+    names = controllers + [p for p in policies if p not in controllers]
     for scale in scales:
         for seed in seeds:
-            for c in controllers:
+            for c in names:
                 sumo_out = out_dir / "sumo" / c / f"scale{scale:g}"
-                if c == "ppo":
-                    if checkpoint is None:
-                        raise ValueError("--checkpoint is required for controller 'ppo'")
-                    m = run_ppo(fixture, cfg, checkpoint, seed, scale, sumo_out)
+                if c in policies:
+                    m = run_policy(fixture, cfg, policies[c], seed, scale, sumo_out)
+                elif c == "ppo":
+                    raise ValueError("--checkpoint (or --policy ppo=...) is required for 'ppo'")
                 else:
                     m = run_plan_controller(fixture, cfg, c, seed, scale, sumo_out, plan_log)
                 row = {"fixture": fixture.name, "controller": c, "scale": scale, "seed": seed}
@@ -200,6 +282,7 @@ def evaluate(
                     f"viol={int(row['safety_violations'])} drift={row['drift_mismatches']:.0f}",
                     flush=True,
                 )
+    rows = add_group_rows(rows, groups or {})
     with open(out_dir / "results.csv", "w", newline="", encoding="utf-8") as fh:
         fh.write(f"# {fixture.disclaimer}\n")
         w = csv.DictWriter(fh, fieldnames=list(rows[0]))
@@ -208,7 +291,8 @@ def evaluate(
     (out_dir / "plans.json").write_text(json.dumps(plan_log, indent=1), "utf-8")
     (out_dir / "eval_config.yaml").write_text(
         yaml.safe_dump({"controllers": controllers, "seeds": seeds, "scales": scales,
-                        "checkpoint": str(checkpoint) if checkpoint else None,
+                        "policies": {k: str(v) for k, v in policies.items()},
+                        "groups": groups or {},
                         "horizon_s": cfg.sim.horizon_s, "warmup_s": cfg.sim.warmup_s}),
         "utf-8",
     )  # fmt: skip
@@ -222,7 +306,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--config", default="ai/configs/marl_ppo.yaml")
     p.add_argument("--fixture", default="toy_corridor")
     p.add_argument("--controllers", nargs="+", default=["fixed_time", "webster"])
-    p.add_argument("--checkpoint", type=Path)
+    p.add_argument("--checkpoint", type=Path, help="IPPO checkpoint evaluated as label 'ppo'")
+    p.add_argument("--policy", nargs="*", default=[], metavar="LABEL=PATH")
+    p.add_argument("--group", nargs="*", default=[], metavar="LABEL=a,b,c")
     p.add_argument("--seeds", nargs="+", type=int, default=list(range(1000, 1010)))
     p.add_argument("--scales", nargs="+", type=float, default=[1.0])
     p.add_argument("--horizon", type=int, help="override sim.horizon_s")
@@ -232,7 +318,10 @@ def main(argv: list[str] | None = None) -> None:
     if args.horizon:
         overrides["sim.horizon_s"] = args.horizon
     cfg = load_experiment_config(args.config, overrides=overrides)
-    evaluate(cfg, args.controllers, args.seeds, args.scales, args.checkpoint, args.out)
+    policies = {k: Path(v) for k, _, v in (x.partition("=") for x in args.policy)}
+    groups = {k: v.split(",") for k, _, v in (x.partition("=") for x in args.group)}
+    evaluate(cfg, args.controllers, args.seeds, args.scales, args.checkpoint, args.out,
+             policies, groups)  # fmt: skip
 
 
 if __name__ == "__main__":

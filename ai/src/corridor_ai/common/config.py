@@ -120,6 +120,32 @@ class PPOConfig:
 
 
 @dataclass(frozen=True)
+class DQNConfig:
+    """Parameter-shared independent Double DQN with action masking (TASK-301b)."""
+
+    episodes: int = 100
+    learning_rate: float = 5e-4
+    gamma: float = 0.99
+    buffer_size: int = 200_000
+    batch_size: int = 256
+    learning_starts: int = 5_000  # transitions before the first update
+    train_every: int = 1  # decision steps between updates
+    gradient_steps: int = 2  # updates per training step (6 agents add 6 transitions/step)
+    target_tau: float = 0.005  # soft target-network update per gradient step
+    eps_start: float = 1.0
+    eps_end: float = 0.05
+    eps_decay_fraction: float = 0.4  # share of all decision steps used to decay epsilon
+    hidden_sizes: tuple[int, ...] = (128, 128)
+    max_grad_norm: float = 10.0
+    device: str = "cpu"
+    train_scale_min: float = 0.8
+    train_scale_max: float = 1.3
+    eval_every: int = 10
+    eval_seed: int = 999
+    checkpoint_every: int = 25
+
+
+@dataclass(frozen=True)
 class EmergencyConfig:
     """Proactive emergency green corridor (TASK-302); see ai/docs/emergency_corridor.md."""
 
@@ -161,12 +187,14 @@ class EmergencyConfig:
 @dataclass(frozen=True)
 class ExperimentConfig:
     name: str = "experiment"
+    algo: str = "ppo"  # "ppo" (IPPO-PS) | "dqn" (parameter-shared Double DQN)
     fixture: str = "toy_corridor"
     seed: int = 0
     limits: SignalLimits = field(default_factory=SignalLimits)
     sim: SimConfig = field(default_factory=SimConfig)
     env: EnvConfig = field(default_factory=EnvConfig)
     ppo: PPOConfig = field(default_factory=PPOConfig)
+    dqn: DQNConfig = field(default_factory=DQNConfig)
     emergency: EmergencyConfig = field(default_factory=EmergencyConfig)
 
 

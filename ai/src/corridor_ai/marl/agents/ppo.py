@@ -29,6 +29,7 @@ class Trajectory:
     logps: list[float] = field(default_factory=list)
     values: list[float] = field(default_factory=list)
     rewards: list[float] = field(default_factory=list)
+    include: list[bool] = field(default_factory=list)  # False: excluded from the loss
     last_value: float = 0.0  # V(s_T) for bootstrapping at truncation
 
 
@@ -86,13 +87,18 @@ class PPOAgent:
                 np.asarray(tr.rewards, dtype=np.float32), values, tr.last_value,
                 cfg.gamma, cfg.gae_lambda,
             )  # fmt: skip
-            obs.append(np.asarray(tr.obs, dtype=np.float32))
-            masks.append(np.asarray(tr.masks, dtype=bool))
-            acts.append(np.asarray(tr.actions, dtype=np.int64))
-            logps.append(np.asarray(tr.logps, dtype=np.float32))
-            advs.append(adv)
-            rets.append(ret)
-            vals.append(values)
+            # GAE runs over the full trajectory; excluded steps (emergency preemption)
+            # are dropped from the loss afterwards
+            keep = np.asarray(tr.include if tr.include else [True] * len(tr.rewards), dtype=bool)
+            if not keep.any():
+                continue
+            obs.append(np.asarray(tr.obs, dtype=np.float32)[keep])
+            masks.append(np.asarray(tr.masks, dtype=bool)[keep])
+            acts.append(np.asarray(tr.actions, dtype=np.int64)[keep])
+            logps.append(np.asarray(tr.logps, dtype=np.float32)[keep])
+            advs.append(adv[keep])
+            rets.append(ret[keep])
+            vals.append(values[keep])
         dev = self.device
         b_obs = torch.as_tensor(np.concatenate(obs), device=dev)
         b_mask = torch.as_tensor(np.concatenate(masks), device=dev)
