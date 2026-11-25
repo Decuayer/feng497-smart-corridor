@@ -41,6 +41,7 @@ class CorridorSim:
         scale: float | None = None,
         controlled: bool = True,
         end_s: int | None = None,
+        extra_route_files: list[Path] | None = None,
     ) -> None:
         self.fixture = fixture
         self.cfg = cfg
@@ -49,6 +50,7 @@ class CorridorSim:
         self.controlled = controlled
         self.output_dir = output_dir
         self.end_s = end_s if end_s is not None else cfg.sim.warmup_s + cfg.sim.horizon_s
+        self.extra_route_files = list(extra_route_files or [])
         self.models: dict[str, TLSModel] = load_tls_models(fixture.net)
         self.session = SumoSession(cfg.sim.backend, cfg.sim.gui)
         self.machines: dict[str, PhaseMachine] = {}
@@ -66,9 +68,14 @@ class CorridorSim:
     # ---------------------------------------------------------------- setup
     def start(self) -> None:
         demand = build_demand(self.fixture, self.scale, self.seed, self.end_s)
+        if self.extra_route_files and demand.sumo_scale != 1.0:
+            raise ValueError(
+                "extra route files (e.g. emergency vehicles) need scale baked into demand"
+            )
+        route_files = ",".join(str(p) for p in [demand.route_file, *self.extra_route_files])
         args = [
             "-n", str(self.fixture.net),
-            "-r", str(demand.route_file),
+            "-r", route_files,
             "--seed", str(self.seed),
             "--scale", f"{demand.sumo_scale:g}",
             "--begin", "0",

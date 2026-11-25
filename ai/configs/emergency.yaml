@@ -1,0 +1,24 @@
+# TASK-302 emergency green corridor experiments. Merged on top of base.yaml.
+name: emergency
+sim:
+  horizon_s: 3600
+emergency:
+  enabled: true
+  lookahead: 2
+  startup_lost_s: 2.0
+  saturation_headway_s: 2.0
+  margin_s: 3.0
+  min_speed_frac: 0.6
+  reservice: true
+  flush_count: vehicles_ahead
+  max_hold_s: 90
+  ev_speed_factor: 1.3
+  ev_count: 10
+  ev_first_after_warmup_s: 120
+  ev_last_before_end_s: 900
+  ev_firebrigade_share: 0.3
+  recovery_tolerance_frac: 0.1
+  recovery_tolerance_abs: 2.0
+  recovery_sustain_s: 60
+  recovery_smooth_s: 30
+  recovery_bound_s: 180

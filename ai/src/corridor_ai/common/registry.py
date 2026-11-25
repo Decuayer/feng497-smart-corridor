@@ -26,8 +26,14 @@ class Fixture:
     demand: dict[str, Any]
     agents: dict[str, str]  # contract id -> TLS id (insertion order = corridor order)
     description: str = ""
-    corridor_edges: tuple[str, ...] = field(default_factory=tuple)
+    corridor_routes: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    kpi_route: str | None = None
     placeholder: bool = True
+
+    @property
+    def corridor_edges(self) -> tuple[str, ...]:
+        """Edges of the emergency-KPI corridor route (empty if none defined)."""
+        return self.corridor_routes.get(self.kpi_route or "", ())
 
     @property
     def disclaimer(self) -> str:
@@ -65,14 +71,25 @@ def load_fixture(name: str, fixtures_file: Path | None = None) -> Fixture:
     if bad:
         raise ValueError(f"fixture '{name}' uses unknown intersection ids {sorted(bad)}")
     demand = dict(raw.get("demand", {"type": "file"}))
-    if "path" in demand:
-        demand["path"] = str(resolve(demand["path"], AI_DIR))
+    for key in ("path", "background"):
+        if key in demand:
+            demand[key] = str(resolve(demand[key], AI_DIR))
+    corridor = raw.get("corridor") or {}
+    if "file" in corridor:
+        data_c = yaml.safe_load(resolve(corridor["file"], AI_DIR).read_text("utf-8"))
+        routes = {k: tuple(v["edges"]) for k, v in data_c["routes"].items()}
+    else:
+        routes = {k: tuple(v) for k, v in (corridor.get("routes") or {}).items()}
+    kpi_route = corridor.get("kpi_route")
+    if kpi_route is not None and kpi_route not in routes:
+        raise ValueError(f"fixture '{name}': kpi_route '{kpi_route}' not in corridor routes")
     return Fixture(
         name=name,
         net=resolve(raw["net"], AI_DIR),
         demand=demand,
         agents=agents,
         description=str(raw.get("description", "")).strip(),
-        corridor_edges=tuple((raw.get("corridor") or {}).get("edges", ())),
+        corridor_routes=routes,
+        kpi_route=kpi_route,
         placeholder=bool(raw.get("placeholder", True)),
     )
